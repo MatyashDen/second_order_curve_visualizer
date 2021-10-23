@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Math project</title>
+
+        <link rel="icon" href="https://www.svgrepo.com/show/255154/stats-graph.svg" type="image/x-icon" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+        <script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+	</head>
+	<body>
+        <div class="cmn-row">
+            <div id="calculator"></div>
+            <div class="flex-wrapper">
+                <select id="curveSelect">
+                    <option value="default">Вiльне малювання</option>
+                    <option value="circle">Коло</option>
+                    <option value="elips">Елiпс</option>
+                    <option value="parabola1">Парабола 1</option>
+                    <option value="parabola2">Парабола 2</option>
+                    <option value="hyperbola1">Гiпербола 1</option>
+                    <option value="hyperbola2">Гiпербола 2</option>
+                </select>
+            </div>
+        </div>
+        <script>
+            const step = 0.1;
+            var elt = document.getElementById('calculator');
+            var calculator = Desmos.GraphingCalculator(elt, {
+                keyboard: false
+            });
+
+            $("#curveSelect").on("change", () => {
+                calculator.setBlank();
+                let type = $("#curveSelect :selected").val();
+                let labels = $("label");
+
+                switch(type) {
+                    case "circle": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(a, b)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(x - a)^2 + (y - b)^2=R ^ 2',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "r1",
+                            latex: "R = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+
+                        break;
+                    }
+
+                    case "elips": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(A, B)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(x - A)^2/a ^ 2 + (y - B)^2/b ^ 2 = 1',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+                        
+                        calculator.setExpression({
+                            id: "A",
+                            latex: "A = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "B",
+                            latex: "B = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 2",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+
+                        let helperA = calculator.HelperExpression({latex: 'a'});
+                        let helperB = calculator.HelperExpression({latex: 'b'});
+
+                        function update() {
+                            let a = helperA.numericValue;
+                            let b = helperB.numericValue;
+
+                            if (a > b) {
+                                calculator.setExpression({
+                                    id: "c",
+                                    latex: "c = \\sqrt{(a ^ 2 - b ^ 2)}"
+                                });
+
+                                calculator.setExpression({
+                                    id: "E",
+                                    latex: "E = c/a"
+                                });
+
+                                calculator.setExpression({
+                                    id: "focus1",
+                                    latex: "(A - c, B)",
+                                    label: "F1",
+                                    showLabel: true,
+                                    secret: true
+                                });
+
+                                calculator.setExpression({
+                                    id: "focus2",
+                                    latex: "(A + c, B)",
+                                    label: "F2",
+                                    showLabel: true,
+                                    secret: true
+                                });
+                            } else {
+                                calculator.setExpression({
+                                    id: "c",
+                                    latex: "c = \\sqrt{(b ^ 2 - a ^ 2)}"
+                                });
+
+                                calculator.setExpression({
+                                    id: "E",
+                                    latex: "E = c/b"
+                                });
+
+                                calculator.setExpression({
+                                    id: "focus1",
+                                    latex: "(A, B - c)",
+                                    label: "F1",
+                                    showLabel: true,
+                                    secret: true
+                                });
+
+                                calculator.setExpression({
+                                    id: "focus2",
+                                    latex: "(A, B + c)",
+                                    label: "F2",
+                                    showLabel: true,
+                                    secret: true
+                                });
+                            }
+                        }
+
+                        helperA.observe('numericValue', update);
+                        helperB.observe('numericValue', update);
+
+                        calculator.setExpression({
+                            id: "D1",
+                            latex: "x = A - a/E",
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "D2",
+                            latex: "x = A + a/E",
+                            secret: true
+                        });
+                        
+                        break;
+                    }
+
+                    case "parabola1": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(a, b)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(y-b)^2 = 2p(x - a)',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+                        
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "p",
+                            latex: "p = 1",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "D1",
+                            latex: "x = a - p/2",
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "F1",
+                            latex: "(a + p/2, b)",
+                            secret: true,
+                            label: "F",
+                            showLabel: true
+                        });
+
+                        break;
+                    }
+
+                    case "parabola2": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(a, b)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(x-a)^2 = 2p(y - b)',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+                        
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "p",
+                            latex: "p = 1",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "D1",
+                            latex: "y = b - p/2",
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "F1",
+                            latex: "(a, b + p/2)",
+                            secret: true,
+                            label: "F",
+                            showLabel: true
+                        });
+
+                        break;
+                    }
+
+                    case "hyperbola1": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(A, B)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(x - A)^2/a ^ 2 - (y - B)^2/b ^ 2 = 1',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+                        
+                        calculator.setExpression({
+                            id: "A",
+                            latex: "A = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "B",
+                            latex: "B = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "c",
+                            latex: "c = \\sqrt{(a ^ 2 + b ^ 2)}"
+                        });
+
+                        calculator.setExpression({
+                            id: "focus1",
+                            latex: "(A - c, B)",
+                            label: "F1",
+                            showLabel: true,
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "focus2",
+                            latex: "(A + c, B)",
+                            label: "F2",
+                            showLabel: true,
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "asym",
+                            latex: "y - B = b/a*(x - A)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "asym2",
+                            latex: "y - B = -b/a*(x - A)",
+                            secret: true
+                        });
+
+                        break;
+                    }
+
+                    case "hyperbola2": {
+                        calculator.setExpression({
+                            id: "center",
+                            latex: "(B, A)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({ id: 'graph1', latex: '(y - A)^2/a ^ 2 - (x - B)^2/b ^ 2 = 1',
+                        "type":"expression","domain":{"min":"0","max":"1"},"label":"","hidden":false,"secret":false,"color":"#388c46","style":"normal","dragMode":"AUTO","residualVariable":"","regressionParameters":{},"isLogModeRegression":false});
+                        
+                        calculator.setExpression({
+                            id: "A",
+                            latex: "A = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "B",
+                            latex: "B = 0",
+                            sliderBounds: { min: -10, max: 10, step: step}
+                        });
+
+                        calculator.setExpression({
+                            id: "y0",
+                            latex: "a = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "x0",
+                            latex: "b = 1",
+                            sliderBounds: { min: 1, max: 10, step: step}
+                        });
+                        
+                        calculator.setExpression({
+                            id: "c",
+                            latex: "c = \\sqrt{(a ^ 2 + b ^ 2)}"
+                        });
+
+                        calculator.setExpression({
+                            id: "focus1",
+                            latex: "(B, A - c)",
+                            label: "F1",
+                            showLabel: true,
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "focus2",
+                            latex: "(B, A + c)",
+                            label: "F2",
+                            showLabel: true,
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "asym",
+                            latex: "y - A = a/b*(x - B)",
+                            secret: true
+                        });
+
+                        calculator.setExpression({
+                            id: "asym2",
+                            latex: "y - A = -a/b*(x - B)",
+                            secret: true
+                        });
+
+                        break;
+                    }
+
+                    default: {
+                        //alert("error");
+                        break;
+                    }
+                }
+            });
+        </script>
+	</body>
+</html>
